@@ -18,7 +18,7 @@ python dcgam_bike.py
 ```
 Output path: ./images_dcgan
 
-* gan_bike.py
+* gan_bike.py  
 Put sample images on ./data/set directory.  
 And input following command to prompt.
 ```
