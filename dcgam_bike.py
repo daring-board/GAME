@@ -6,7 +6,7 @@ from keras.layers import BatchNormalization, Activation, ZeroPadding2D
 from keras.layers.advanced_activations import LeakyReLU
 from keras.layers.convolutional import UpSampling2D, Conv2D
 from keras.models import Sequential, Model
-from keras.optimizers import Adam
+from keras.optimizers import Adam, SGD
 
 import matplotlib.pyplot as plt
 
@@ -23,12 +23,13 @@ class DCGAN():
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
         self.latent_dim = 100
 
-        optimizer = Adam(0.0002, 0.5)
+        adam = Adam(0.002, 0.5)
+        sgd = SGD(0.0008)
 
         # Build and compile the discriminator
         self.discriminator = self.build_discriminator()
         self.discriminator.compile(loss='binary_crossentropy',
-            optimizer=optimizer,
+            optimizer=sgd,
             metrics=['accuracy'])
 
         # Build the generator
@@ -47,7 +48,7 @@ class DCGAN():
         # The combined model  (stacked generator and discriminator)
         # Trains the generator to fool the discriminator
         self.combined = Model(z, valid)
-        self.combined.compile(loss='binary_crossentropy', optimizer=optimizer)
+        self.combined.compile(loss='binary_crossentropy', optimizer=adam)
 
     def build_generator(self):
 
@@ -106,11 +107,9 @@ class DCGAN():
 
     def load_imgs(self):
         imgs_rootpath = './data/set/'
-        img_paths = []
         images = []
         img_names = os.listdir(imgs_rootpath)
-        for img_name in img_names:
-            img_paths.append(imgs_rootpath+img_name)
+        img_paths = [imgs_rootpath+img_name for img_name in img_names if not 'empty' in img_name]
 
         for img_path in img_paths:
             img = cv2.imread(img_path)
@@ -184,10 +183,10 @@ class DCGAN():
                 axs[i,j].imshow(gen_imgs[cnt, :,:,])
                 axs[i,j].axis('off')
                 cnt += 1
-        fig.savefig("images_dcgan/bike_%d.png" % epoch)
+        fig.savefig("images_dcgan/%d.png" % epoch)
         plt.close()
 
 
 if __name__ == '__main__':
     dcgan = DCGAN()
-    dcgan.train(epochs=4000, batch_size=32, save_interval=10)
+    dcgan.train(epochs=10000, batch_size=32, save_interval=200)
